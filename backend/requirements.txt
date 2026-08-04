@@ -3,4 +3,6 @@ uvicorn[standard]
 pydantic-settings
 asyncpg
 qdrant-client
-python-dotenv
+sqlalchemy>=2.0
+alembic
+psycopg2-binary
