@@ -11,5 +11,7 @@ class Settings(BaseSettings):
     qdrant_host: str = "qdrant"
     qdrant_port: int = 6333
 
+    corpus_dir: str = "/app/data/corpus"
+
 
 settings = Settings()

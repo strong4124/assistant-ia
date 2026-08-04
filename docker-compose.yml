@@ -37,6 +37,11 @@ services:
       POSTGRES_PORT: 5432
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
+      - ./data:/app/data:ro
     depends_on:
       postgres:
         condition: service_healthy
