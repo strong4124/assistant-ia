@@ -27,6 +27,24 @@ services:
     ports:
       - "127.0.0.1:${QDRANT_PORT}:6333"
 
+  api:
+    build: ./backend
+    container_name: assistant_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    ports:
+      - "127.0.0.1:${API_PORT}:8000"
+
 volumes:
   pgdata:
   qdrant_storage:
