@@ -2,6 +2,7 @@ from app.core.config import settings
 from app.services.ingestion.loader import load_corpus
 from app.services.ingestion.chunker import chunk_document
 from app.services.ingestion.indexer import index_chunks, COLLECTION_NAME
+from app.services.ingestion.lexical_indexer import index_chunks_lexical
 
 
 def main() -> None:
@@ -15,8 +16,12 @@ def main() -> None:
         all_chunks.extend(chunk_document(doc))
 
     print(f"{len(documents)} documents charges, {len(all_chunks)} chunks a indexer...")
-    count = index_chunks(all_chunks)
-    print(f"{count} points indexes dans Qdrant (collection '{COLLECTION_NAME}').")
+
+    vector_count = index_chunks(all_chunks)
+    print(f"{vector_count} points indexes dans Qdrant (collection '{COLLECTION_NAME}').")
+
+    lexical_count = index_chunks_lexical(all_chunks)
+    print(f"{lexical_count} chunks indexes dans PostgreSQL (recherche lexicale).")
 
 
 if __name__ == "__main__":
