@@ -7,6 +7,10 @@ from app.core.config import settings
 
 app = FastAPI(title="Assistant IA Service Client - API")
 
+from app.api import chat
+# ...
+app.include_router(chat.router)
+
 
 @app.get("/health")
 async def health():
