@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ticket {{ ticket.id }} - Teranga Telecom</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f8; color: #1a1a1a; max-width: 800px; }
+  a.back { color: #2563eb; text-decoration: none; }
+  .meta { background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  .meta div { margin-bottom: 0.4rem; }
+  .conversation { background: white; border-radius: 8px; padding: 1rem; }
+  .msg { padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.6rem; max-width: 80%; }
+  .msg-user { background: #e5edff; }
+  .msg-assistant { background: #f0f0f0; margin-left: auto; }
+  .msg .role { font-size: 0.75rem; color: #666; margin-bottom: 0.2rem; }
+  form { margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; }
+  select, input, button { padding: 0.4rem; margin-right: 0.5rem; }
+</style>
+</head>
+<body>
+  <a class="back" href="/agent/tickets">&larr; Retour à la file</a>
+  <h1>Ticket #{{ ticket.id|string|truncate(8, True, '') }}</h1>
+
+  <div class="meta">
+    <div><strong>Statut :</strong> {{ ticket.status }}</div>
+    <div><strong>Motif :</strong> {{ ticket.reason or '-' }}</div>
+    <div><strong>Canal :</strong> {{ ticket.channel }} ({{ ticket.external_user_id }})</div>
+    <div><strong>Agent assigné :</strong> {{ ticket.assigned_agent or 'non assigné' }}</div>
+    <div><strong>Résumé :</strong> {{ ticket.summary }}</div>
+  </div>
+
+  <div class="conversation">
+    <h3>Historique de la conversation</h3>
+    {% for m in ticket.messages %}
+    <div class="msg msg-{{ m.role }}">
+      <div class="role">{{ m.role }} — {{ m.created_at.strftime('%d/%m %H:%M') }}</div>
+      {{ m.content }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <form id="update-form">
+    <label>Statut :
+      <select name="status" id="status">
+        {% for s in ['open', 'assigned', 'in_progress', 'resolved', 'closed'] %}
+        <option value="{{ s }}" {{ 'selected' if s == ticket.status else '' }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Agent : <input type="text" name="assigned_agent" id="assigned_agent" value="{{ ticket.assigned_agent or '' }}"></label>
+    <button type="submit">Mettre à jour</button>
+  </form>
+
+  <script>
+    document.getElementById('update-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('status').value;
+      const agent = document.getElementById('assigned_agent').value;
+      await fetch('/api/v1/tickets/{{ ticket.id }}', {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: status, assigned_agent: agent || null})
+      });
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

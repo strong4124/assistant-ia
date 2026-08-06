@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://192.168.118.133:5173"],  # serveur de dev Vite ; ajouter le domaine de prod plus tard
+    allow_origins=["http://localhost:5173", "http://192.168.118.133:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,9 +27,10 @@ app.add_middleware(
 async def on_startup():
     asyncio.create_task(run_polling())
 
-from app.api import chat
-# ...
+from app.api import chat, tickets, agent_ui
 app.include_router(chat.router)
+app.include_router(tickets.router)
+app.include_router(agent_ui.router)
 
 
 @app.get("/health")

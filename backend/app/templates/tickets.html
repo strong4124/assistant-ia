@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>File des tickets - Teranga Telecom</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f8; color: #1a1a1a; }
+  .filters a { margin-right: 1rem; text-decoration: none; color: #2563eb; }
+  .filters a.active { font-weight: bold; text-decoration: underline; }
+  table { border-collapse: collapse; width: 100%; margin-top: 1rem; background: white; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #e5e5e5; }
+  th { background: #eef0f3; }
+  tr:hover { background: #f0f4ff; cursor: pointer; }
+  .badge { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.8rem; color: white; }
+  .badge-open { background: #dc2626; }
+  .badge-assigned { background: #d97706; }
+  .badge-in_progress { background: #2563eb; }
+  .badge-resolved { background: #16a34a; }
+  .badge-closed { background: #6b7280; }
+</style>
+</head>
+<body>
+  <h1>File des tickets</h1>
+  <div class="filters">
+    <a href="/agent/tickets" class="{{ 'active' if not current_status else '' }}">Tous</a>
+    <a href="/agent/tickets?status=open" class="{{ 'active' if current_status == 'open' else '' }}">Ouverts</a>
+    <a href="/agent/tickets?status=assigned" class="{{ 'active' if current_status == 'assigned' else '' }}">Assignés</a>
+    <a href="/agent/tickets?status=in_progress" class="{{ 'active' if current_status == 'in_progress' else '' }}">En cours</a>
+    <a href="/agent/tickets?status=resolved" class="{{ 'active' if current_status == 'resolved' else '' }}">Résolus</a>
+  </div>
+  <table>
+    <thead><tr><th>Créé le</th><th>Statut</th><th>Motif</th><th>Résumé</th><th>Agent</th></tr></thead>
+    <tbody>
+      {% for t in tickets %}
+      <tr onclick="window.location='/agent/tickets/{{ t.id }}'">
+        <td>{{ t.created_at.strftime('%d/%m %H:%M') }}</td>
+        <td><span class="badge badge-{{ t.status }}">{{ t.status }}</span></td>
+        <td>{{ t.reason or '-' }}</td>
+        <td>{{ t.summary[:80] }}{{ '...' if t.summary|length > 80 else '' }}</td>
+        <td>{{ t.assigned_agent or '-' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">Aucun ticket.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
