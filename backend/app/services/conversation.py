@@ -1,3 +1,5 @@
+from app.services.guardrails.scope_filter import is_out_of_scope
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import ChatSession, Message, Ticket
@@ -15,8 +17,16 @@ async def process_user_message(db: AsyncSession, session: ChatSession, content: 
     """
     db.add(Message(session_id=session.id, role="user", content=content))
 
-    chunks = hybrid_search(content, limit=3)
-    result = await generate_answer(content, chunks)
+    if is_out_of_scope(content):
+        result = {
+            "answer": "",
+            "sources": [],
+            "refused": True,
+            "refusal_reason": "hors_perimetre_filtre",
+        }
+    else:
+        chunks = hybrid_search(content, limit=3)
+        result = await generate_answer(content, chunks)
 
     assistant_message = Message(
         session_id=session.id,
@@ -31,7 +41,7 @@ async def process_user_message(db: AsyncSession, session: ChatSession, content: 
     db.add(assistant_message)
 
     ticket_id = None
-    if result["refused"]:
+    if result["refused"] and result["refusal_reason"] != "hors_perimetre_filtre":
         summary = (
             f"Question non resolue par l'assistant (motif : {result['refusal_reason']}).\n"
             f"Derniere question du client : {content}"

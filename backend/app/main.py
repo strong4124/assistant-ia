@@ -1,5 +1,8 @@
 import logging
+from app.core.logging_filters import PIIRedactionFilter
 logging.basicConfig(level=logging.INFO)
+logging.getLogger().addFilter(PIIRedactionFilter())
+
 
 import asyncio
 from app.channels.telegram_bot import run_polling
