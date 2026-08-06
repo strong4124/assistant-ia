@@ -27,6 +27,15 @@ services:
     ports:
       - "127.0.0.1:${QDRANT_PORT}:6333"
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: assistant_ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+
   api:
     build: ./backend
     container_name: assistant_api
@@ -37,6 +46,8 @@ services:
       POSTGRES_PORT: 5432
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
+      OLLAMA_HOST: ollama
+      OLLAMA_PORT: 11434
     volumes:
       - ./backend/app:/app/app
       - ./backend/alembic:/app/alembic
@@ -47,9 +58,12 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_started
+      ollama:
+        condition: service_started
     ports:
       - "127.0.0.1:${API_PORT}:8000"
 
 volumes:
   pgdata:
   qdrant_storage:
+  ollama_data:

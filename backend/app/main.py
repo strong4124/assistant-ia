@@ -1,3 +1,9 @@
+import logging
+logging.basicConfig(level=logging.INFO)
+
+import asyncio
+from app.channels.telegram_bot import run_polling
+
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 import asyncpg
@@ -6,6 +12,20 @@ from qdrant_client import QdrantClient
 from app.core.config import settings
 
 app = FastAPI(title="Assistant IA Service Client - API")
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://192.168.118.133:5173"],  # serveur de dev Vite ; ajouter le domaine de prod plus tard
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def on_startup():
+    asyncio.create_task(run_polling())
 
 from app.api import chat
 # ...

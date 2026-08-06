@@ -44,7 +44,7 @@ async def post_message(payload: MessageCreate, db: AsyncSession = Depends(get_db
 
     # 2. Recherche hybride + generation validee (RAG complet)
     chunks = hybrid_search(payload.content, limit=3)
-    result = generate_answer(payload.content, chunks)
+    result = await generate_answer(payload.content, chunks)
 
     # 3. Enregistre la reponse assistant. refused/refusal_reason stockes dans
     # la colonne JSONB 'sources' faute de colonnes dediees pour l'instant.
