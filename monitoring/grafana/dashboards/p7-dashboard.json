@@ -1,0 +1,154 @@
+{
+  "title": "Assistant IA - Qualite de service",
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Taux de resolution automatique",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(p7_resolutions_total) / sum(p7_messages_total) * 100",
+          "legendFormat": "resolution"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+    },
+    {
+      "id": 2,
+      "title": "Taux d'escalade",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(p7_escalations_total) / sum(p7_messages_total) * 100",
+          "legendFormat": "escalade"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1 } }
+    },
+    {
+      "id": 3,
+      "title": "Temps de reponse moyen (generation LLM)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(p7_generation_duration_seconds_sum) / sum(p7_generation_duration_seconds_count)",
+          "legendFormat": "duree moyenne"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 1 } }
+    },
+    {
+      "id": 4,
+      "title": "Messages traites (total)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(p7_messages_total)",
+          "legendFormat": "messages"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Messages par canal",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (channel) (p7_messages_total)",
+          "legendFormat": "{{channel}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Motifs d'escalade les plus frequents",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 6 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "rawSql": "SELECT reason AS metric, count(*) AS value FROM tickets GROUP BY reason ORDER BY value DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Retours utilisateurs (pouce haut / bas)",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 6 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "rawSql": "SELECT CASE WHEN is_positive THEN 'Pouce haut' ELSE 'Pouce bas' END AS metric, count(*) AS value FROM feedback GROUP BY is_positive",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Volume de tickets par statut",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "rawSql": "SELECT status AS metric, count(*) AS value FROM tickets GROUP BY status ORDER BY value DESC",
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Volume de messages dans le temps",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "rawSql": "SELECT date_trunc('hour', created_at) AS time, count(*) AS \"messages\" FROM messages WHERE role = 'user' GROUP BY 1 ORDER BY 1",
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true
+        }
+      ]
+    }
+  ]
+}
