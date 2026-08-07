@@ -1,3 +1,4 @@
+from prometheus_fastapi_instrumentator import Instrumentator
 import logging
 from app.core.logging_filters import PIIRedactionFilter
 logging.basicConfig(level=logging.INFO)
@@ -15,6 +16,8 @@ from qdrant_client import QdrantClient
 from app.core.config import settings
 
 app = FastAPI(title="Assistant IA Service Client - API")
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 from fastapi.middleware.cors import CORSMiddleware
 

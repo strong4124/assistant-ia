@@ -9,3 +9,5 @@ psycopg2-binary
 sentence-transformers
 anthropic
 httpx
+jinja2
+prometheus-fastapi-instrumentator
