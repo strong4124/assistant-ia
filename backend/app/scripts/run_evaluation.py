@@ -1,10 +1,9 @@
 """
 Rejoue le jeu de test annote (data/eval/qa_testset.json) contre le pipeline
-reel (hybrid_search + generate_answer + validate_and_correct), et mesure :
-exactitude sur les refus attendus, rappel de la source citee, latence.
-Concu pour tourner en arriere-plan (nohup) vu la latence Mistral (30-190s/appel).
-Ecrit les resultats au fur et a mesure dans un CSV, pour pouvoir consulter
-la progression sans attendre la fin du run complet.
+reel, et mesure : exactitude sur les refus attendus, rappel de la source
+citee, latence. Verrou anti-double-lancement (evite la corruption par
+ecriture concurrente) et reprise automatique sur un CSV deja partiellement
+rempli (evite de reperdre des heures de calcul si le run est interrompu).
 """
 import asyncio
 import csv
@@ -12,11 +11,14 @@ import json
 import time
 from pathlib import Path
 
-from app.services.generation.generator import generate_answer
-from app.services.retrieval.hybrid_search import hybrid_search
+#from app.services.generation.generator import generate_answer
+#from app.services.retrieval.hybrid_search import hybrid_search
+
+from app.services.guardrails.scope_filter import is_out_of_scope
 
 TESTSET_PATH = Path("data/eval/qa_testset.json")
 RESULTS_PATH = Path("data/eval/results.csv")
+LOCK_PATH = Path("data/eval/.run_evaluation.lock")
 
 FIELDNAMES = [
     "id", "category", "question",
@@ -26,23 +28,28 @@ FIELDNAMES = [
 ]
 
 
+def _load_completed_ids() -> set[str]:
+    if not RESULTS_PATH.exists():
+        return set()
+    try:
+        with open(RESULTS_PATH, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            return {row["id"] for row in reader if row.get("id")}
+    except Exception:
+        return set()
+
 async def evaluate_one(entry: dict) -> dict:
     question = entry["question"]
 
     start = time.perf_counter()
-    chunks = hybrid_search(question, limit=3)
-    result = await generate_answer(question, chunks)
+    if is_out_of_scope(question):
+        result = {"answer": "", "sources": [], "refused": True, "refusal_reason": "hors_perimetre_filtre"}
+        chunks = []
+    else:
+        chunks = hybrid_search(question, limit=3)
+        result = await generate_answer(question, chunks)
     latency = time.perf_counter() - start
 
-    actual_sources = result["sources"]
-    expected_source = entry["expected_source"]
-
-    # Rappel : la source attendue apparait-elle parmi les chunks recuperes
-    # (top-k), independamment de ce que le LLM a fini par citer ?
-    retrieved_titles = {c["title"] for c in chunks}
-    source_found_in_topk = expected_source in retrieved_titles if expected_source else None
-
-    refusal_correct = result["refused"] == entry["expected_refused"]
 
     return {
         "id": entry["id"],
@@ -59,22 +66,39 @@ async def evaluate_one(entry: dict) -> dict:
 
 
 async def main():
-    testset = json.loads(TESTSET_PATH.read_text())
-    print(f"{len(testset)} questions a evaluer. Resultats ecrits au fur et a mesure dans {RESULTS_PATH}")
+    if LOCK_PATH.exists():
+        print(f"Verrou present ({LOCK_PATH}) : une evaluation semble deja en cours.")
+        return
 
-    RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(RESULTS_PATH, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
-        writer.writeheader()
+    LOCK_PATH.touch()
+    try:
+        testset = json.loads(TESTSET_PATH.read_text())
+        completed_ids = _load_completed_ids()
+        remaining = [e for e in testset if e["id"] not in completed_ids]
 
-        for i, entry in enumerate(testset, start=1):
-            row = await evaluate_one(entry)
-            writer.writerow(row)
-            f.flush()  # visible immediatement, meme en cours de run
-            print(f"[{i}/{len(testset)}] {row['id']} - refused={row['actual_refused']} "
-                  f"(attendu {row['expected_refused']}) - {row['latency_seconds']}s")
+        print(f"{len(testset)} questions au total, {len(completed_ids)} deja traitees, "
+              f"{len(remaining)} restantes.")
 
-    print("Evaluation terminee.")
+        RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        file_is_new = not completed_ids
+        mode = "w" if file_is_new else "a"
+
+        with open(RESULTS_PATH, mode, newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+            if file_is_new:
+                writer.writeheader()
+                f.flush()
+
+            for i, entry in enumerate(remaining, start=1):
+                row = await evaluate_one(entry)
+                writer.writerow(row)
+                f.flush()
+                print(f"[{i}/{len(remaining)}] {row['id']} - refused={row['actual_refused']} "
+                      f"(attendu {row['expected_refused']}) - {row['latency_seconds']}s")
+
+        print("Evaluation terminee.")
+    finally:
+        LOCK_PATH.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
