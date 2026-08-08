@@ -6,9 +6,8 @@ from sqlalchemy import select
 
 from app.core.config import settings
 from app.db import get_db
-from app.models import ChatSession, Message
-from app.services.generation.generator import generate_answer
-from app.services.retrieval.hybrid_search import hybrid_search
+from app.models import ChatSession
+from app.services.conversation import process_user_message
 
 logger = logging.getLogger("p7-assistant.telegram")
 
@@ -16,8 +15,6 @@ TELEGRAM_API = f"https://api.telegram.org/bot{settings.telegram_bot_token}"
 
 
 async def _get_db_session():
-    """Recupere manuellement une session via la meme dependance que l'API,
-    sans dupliquer la config de l'engine SQLAlchemy."""
     gen = get_db()
     db = await gen.__anext__()
     return db, gen
@@ -43,33 +40,18 @@ async def _handle_message(chat_id: int, text: str) -> None:
     db, gen = await _get_db_session()
     try:
         chat_session = await _get_or_create_session(db, chat_id)
-        db.add(Message(session_id=chat_session.id, role="user", content=text))
-
-        chunks = hybrid_search(text, limit=3)
-        result = await generate_answer(text, chunks)
-
-        reply_text = (
-            result["answer"]
-            if not result["refused"]
-            else "Je n'ai pas trouve cette information dans ma base de connaissances. "
-                 "Souhaitez-vous etre mis en relation avec un agent ?"
-        )
-
-        db.add(
-            Message(
-                session_id=chat_session.id,
-                role="assistant",
-                content=result["answer"],
-                sources={
-                    "cited": result["sources"],
-                    "refused": result["refused"],
-                    "refusal_reason": result["refusal_reason"],
-                },
-            )
-        )
-        await db.commit()
+        result = await process_user_message(db, chat_session, text)
     finally:
         await gen.aclose()
+
+    if result["refused"]:
+        short_id = str(result["ticket_id"])[:8] if result["ticket_id"] else "?"
+        reply_text = (
+            "Je n'ai pas trouve cette information dans ma base de connaissances. "
+            f"Un ticket (#{short_id}) a ete cree, un agent va vous repondre."
+        )
+    else:
+        reply_text = result["answer"]
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         await client.post(

@@ -52,7 +52,8 @@ services:
       - ./backend/app:/app/app
       - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini
-      - ./data:/app/data:ro
+      - ./data/corpus:/app/data/corpus:ro
+      - ./data/eval:/app/data/eval:rw
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,7 +62,21 @@ services:
       ollama:
         condition: service_started
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: assistant_nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
 
   prometheus:
     image: prom/prometheus:latest
@@ -73,7 +88,7 @@ services:
     depends_on:
       - api
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
 
   grafana:
     image: grafana/grafana:latest
@@ -90,7 +105,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
 
 volumes:
   pgdata:

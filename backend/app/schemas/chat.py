@@ -34,6 +34,7 @@ class MessageOut(BaseModel):
     sources: list[str]
     refused: bool
     refusal_reason: str | None
+    ticket_id: uuid.UUID | None = None
     created_at: datetime
 
 
@@ -50,3 +51,38 @@ class FeedbackOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TicketOut(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    status: str
+    summary: str
+    reason: str | None
+    assigned_agent: str | None
+    created_at: datetime
+    updated_at: datetime
+    resolved_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
+class TicketUpdate(BaseModel):
+    status: str | None = None
+    assigned_agent: str | None = None
+
+
+class ConversationMessageOut(BaseModel):
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TicketDetailOut(TicketOut):
+    channel: str
+    external_user_id: str
+    messages: list[ConversationMessageOut]

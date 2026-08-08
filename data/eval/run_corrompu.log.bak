@@ -1,0 +1,65 @@
+nohup: les entrées sont ignorées
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+60 questions a evaluer. Resultats ecrits au fur et a mesure dans data/eval/results.csv
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4902.88it/s]
+[1/60] Q001 - refused=False (attendu False) - 134.2s
+[2/60] Q002 - refused=False (attendu False) - 61.7s
+[3/60] Q003 - refused=False (attendu False) - 69.6s
+[4/60] Q004 - refused=False (attendu False) - 53.4s
+[5/60] Q005 - refused=False (attendu False) - 79.9s
+[6/60] Q006 - refused=False (attendu False) - 72.4s
+[7/60] Q007 - refused=False (attendu False) - 74.0s
+[8/60] Q008 - refused=False (attendu False) - 59.5s
+[9/60] Q009 - refused=False (attendu False) - 57.8s
+[10/60] Q010 - refused=False (attendu False) - 65.8s
+[11/60] Q011 - refused=False (attendu False) - 81.0s
+[12/60] Q012 - refused=False (attendu False) - 72.2s
+[13/60] Q013 - refused=False (attendu False) - 78.7s
+[14/60] Q014 - refused=False (attendu False) - 75.0s
+[15/60] Q015 - refused=False (attendu False) - 123.0s
+[16/60] Q016 - refused=False (attendu False) - 80.0s
+[17/60] Q017 - refused=False (attendu False) - 88.0s
+[18/60] Q018 - refused=True (attendu False) - 63.9s
+[19/60] Q019 - refused=False (attendu False) - 77.7s
+[20/60] Q020 - refused=True (attendu False) - 95.9s
+[21/60] Q021 - refused=False (attendu False) - 72.1s
+[22/60] Q022 - refused=False (attendu False) - 99.9s
+[23/60] Q023 - refused=False (attendu False) - 43.4s
+[24/60] Q024 - refused=False (attendu False) - 56.1s
+[25/60] Q025 - refused=True (attendu False) - 84.0s
+[26/60] Q026 - refused=True (attendu False) - 57.3s
+[27/60] Q027 - refused=True (attendu False) - 46.6s
+[28/60] Q028 - refused=True (attendu False) - 51.1s
+[29/60] Q029 - refused=True (attendu False) - 78.4s
+[30/60] Q030 - refused=True (attendu False) - 89.4s
+[31/60] Q031 - refused=False (attendu False) - 60.9s
+[32/60] Q032 - refused=True (attendu False) - 59.3s
+[33/60] Q033 - refused=False (attendu False) - 80.0s
+[34/60] Q034 - refused=True (attendu False) - 55.1s
+[35/60] Q035 - refused=False (attendu False) - 37.6s
+[36/60] Q036 - refused=True (attendu False) - 42.3s
+[37/60] Q037 - refused=True (attendu False) - 57.9s
+[38/60] Q038 - refused=True (attendu False) - 56.4s
+[39/60] Q039 - refused=True (attendu False) - 52.2s
+[40/60] Q040 - refused=True (attendu False) - 91.6s
+[41/60] Q041 - refused=False (attendu False) - 83.7s
+[42/60] Q042 - refused=True (attendu False) - 40.3s
+[43/60] Q043 - refused=True (attendu False) - 99.4s
+[44/60] Q044 - refused=True (attendu False) - 57.4s
+[45/60] Q045 - refused=True (attendu False) - 87.6s
+[46/60] Q046 - refused=True (attendu False) - 53.4s
+[47/60] Q047 - refused=True (attendu False) - 64.3s
+[48/60] Q048 - refused=True (attendu False) - 89.0s
+[49/60] Q049 - refused=True (attendu True) - 55.8s
+[50/60] Q050 - refused=False (attendu True) - 66.1s
+[51/60] Q051 - refused=True (attendu True) - 68.5s
+[52/60] Q052 - refused=True (attendu True) - 91.0s
+[53/60] Q053 - refused=True (attendu True) - 84.2s
+[54/60] Q054 - refused=True (attendu True) - 30.9s
+[55/60] Q055 - refused=False (attendu True) - 79.3s
+[56/60] Q056 - refused=True (attendu True) - 67.6s
+[57/60] Q057 - refused=True (attendu True) - 87.1s
+[58/60] Q058 - refused=True (attendu True) - 30.4s
+[59/60] Q059 - refused=True (attendu True) - 98.8s
+[60/60] Q060 - refused=False (attendu True) - 100.0s
+Evaluation terminee.

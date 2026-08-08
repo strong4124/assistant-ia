@@ -1,9 +1,7 @@
-import uuid
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_db  # ajuste si ta dependance s'appelle differemment
+from app.db import get_db
 from app.models import ChatSession, Feedback, Message
 from app.schemas.chat import (
     FeedbackCreate,
@@ -13,8 +11,7 @@ from app.schemas.chat import (
     SessionCreate,
     SessionOut,
 )
-from app.services.generation.generator import generate_answer
-from app.services.retrieval.hybrid_search import hybrid_search
+from app.services.conversation import process_user_message
 
 router = APIRouter(prefix="/api/v1", tags=["chat"])
 
@@ -38,29 +35,8 @@ async def post_message(payload: MessageCreate, db: AsyncSession = Depends(get_db
     if session is None:
         raise HTTPException(status_code=404, detail="Session introuvable")
 
-    # 1. Enregistre le message utilisateur
-    user_message = Message(session_id=session.id, role="user", content=payload.content)
-    db.add(user_message)
-
-    # 2. Recherche hybride + generation validee (RAG complet)
-    chunks = hybrid_search(payload.content, limit=3)
-    result = await generate_answer(payload.content, chunks)
-
-    # 3. Enregistre la reponse assistant. refused/refusal_reason stockes dans
-    # la colonne JSONB 'sources' faute de colonnes dediees pour l'instant.
-    assistant_message = Message(
-        session_id=session.id,
-        role="assistant",
-        content=result["answer"],
-        sources={
-            "cited": result["sources"],
-            "refused": result["refused"],
-            "refusal_reason": result["refusal_reason"],
-        },
-    )
-    db.add(assistant_message)
-    await db.commit()
-    await db.refresh(assistant_message)
+    result = await process_user_message(db, session, payload.content)
+    assistant_message = result["message"]
 
     return MessageOut(
         id=assistant_message.id,
@@ -70,6 +46,7 @@ async def post_message(payload: MessageCreate, db: AsyncSession = Depends(get_db
         sources=result["sources"],
         refused=result["refused"],
         refusal_reason=result["refusal_reason"],
+        ticket_id=result["ticket_id"],
         created_at=assistant_message.created_at,
     )
 

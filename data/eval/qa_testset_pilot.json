@@ -1,0 +1,42 @@
+[
+  {
+    "id": "Q001",
+    "question": "Quel est le prix mensuel du forfait Futur ?",
+    "category": "catalogue_offres",
+    "expected_refused": false,
+    "expected_source": "Forfait Futur (jeunes 15-25 ans)",
+    "reference_answer": "3000 FCFA par mois"
+  },
+  {
+    "id": "Q002",
+    "question": "Qui peut souscrire au forfait Futur ?",
+    "category": "catalogue_offres",
+    "expected_refused": false,
+    "expected_source": "Forfait Futur (jeunes 15-25 ans)",
+    "reference_answer": "Clients de 15 a 25 ans, piece d'identite requise en boutique"
+  },
+  {
+    "id": "Q003",
+    "question": "Combien de data inclut le forfait Futur et quelle part est reservee aux reseaux sociaux ?",
+    "category": "catalogue_offres",
+    "expected_refused": false,
+    "expected_source": "Forfait Futur (jeunes 15-25 ans)",
+    "reference_answer": "8 Go dont 3 Go reserves aux reseaux sociaux (WhatsApp, Facebook, Instagram, TikTok)"
+  },
+  {
+    "id": "Q004",
+    "question": "Ou peut-on souscrire pour la premiere fois au forfait Futur ?",
+    "category": "catalogue_offres",
+    "expected_refused": false,
+    "expected_source": "Forfait Futur (jeunes 15-25 ans)",
+    "reference_answer": "Uniquement en boutique Teranga Telecom"
+  },
+  {
+    "id": "Q005",
+    "question": "Que se passe-t-il quand un client du forfait Futur atteint 26 ans ?",
+    "category": "catalogue_offres",
+    "expected_refused": false,
+    "expected_source": "Forfait Futur (jeunes 15-25 ans)",
+    "reference_answer": "Bascule automatique vers le forfait Illimix 10 Go a la fin du cycle en cours"
+  }
+]
