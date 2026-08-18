@@ -27,14 +27,16 @@ services:
     ports:
       - "127.0.0.1:${QDRANT_PORT}:6333"
 
+
+
   ollama:
     image: ollama/ollama:latest
     container_name: assistant_ollama
     restart: unless-stopped
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "127.0.0.1:11434:11434"
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+
+
 
   api:
     build: ./backend
@@ -98,6 +100,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: https://52.6.12.61/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
