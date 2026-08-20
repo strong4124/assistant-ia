@@ -33,6 +33,10 @@ services:
     image: ollama/ollama:latest
     container_name: assistant_ollama
     restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "127.0.0.1:11434:11434"
     environment:
       OLLAMA_NUM_PARALLEL: "1"
 
