@@ -25,7 +25,7 @@ def _call_ollama(system_prompt: str, user_prompt: str) -> str:
             "num_predict": 500,  # borne dure : empeche une generation qui ne terminerait jamais
         },
     }
-    response = httpx.post(url, json=payload, timeout=240.0)
+    response = httpx.post(url, json=payload, timeout=600.0)
     response.raise_for_status()
     return response.json()["message"]["content"]
 
